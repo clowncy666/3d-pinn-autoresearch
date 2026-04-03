@@ -1235,7 +1235,7 @@ if __name__ == "__main__":
     print("=" * 80)
 
     epochs_adam = 6000
-    epochs_lbfgs = 0
+    epochs_lbfgs = 300
 
     # ---------- Phase 1: Adam ----------
     print(f"\n--- Phase 1: Adam ({epochs_adam} epochs) ---")
