@@ -126,10 +126,10 @@ dz_vals = [z1 - z0, z2 - z1, z3 - z2]
 
 print("=" * 80)
 print("三维四分之一模型几何参数 (mm):")
-print(f"Substrate: x∈[{x_sub_min}, {x_sub_max}], y∈[{y_sub_min}, {y_sub_max}], z∈[{z0}, {z1}]")
-print(f"Bump:      x∈[{x_bump_min}, {x_bump_max}], y∈[{y_bump_min}, {y_bump_max}], z∈[{z1}, {z2}]")
-print(f"Chip:      x∈[{x_chip_min}, {x_chip_max}], y∈[{y_chip_min}, {y_chip_max}], z∈[{z2}, {z3}]")
-print(f"Alpha (mm²/s): Sub={alpha_sub:.6f}, Bump={alpha_bump:.5f}, Chip={alpha_chip:.4f}")
+print(f"Substrate: x in [{x_sub_min}, {x_sub_max}], y in [{y_sub_min}, {y_sub_max}], z in [{z0}, {z1}]")
+print(f"Bump:      x in [{x_bump_min}, {x_bump_max}], y in [{y_bump_min}, {y_bump_max}], z in [{z1}, {z2}]")
+print(f"Chip:      x in [{x_chip_min}, {x_chip_max}], y in [{y_chip_min}, {y_chip_max}], z in [{z2}, {z3}]")
+print(f"Alpha (mm^2/s): Sub={alpha_sub:.6f}, Bump={alpha_bump:.5f}, Chip={alpha_chip:.4f}")
 print(f"BETA_HC = {BETA_HC}")
 print("=" * 80)
 
@@ -319,49 +319,49 @@ def sample_interface_scaled(num, x_range_phys, y_range_phys, z_val_phys, sub_idx
 # ==========================================================
 # 5. 采样生成函数
 # ==========================================================
-N_INT_SUB = 24000
-N_INT_BUMP = 12000
-N_INT_CHIP = 14000
+N_INT_SUB = 8000
+N_INT_BUMP = 4000
+N_INT_CHIP = 5000
 
-N_BC_SUB_BOTTOM = 10000
-N_BC_CHIP_TOP = 8000
+N_BC_SUB_BOTTOM = 3500
+N_BC_CHIP_TOP = 2800
 
 # substrate 对称面 x=0, y=0
-N_SUB_X0 = 4000
-N_SUB_Y0 = 4000
+N_SUB_X0 = 1400
+N_SUB_Y0 = 1400
 
 # substrate 外侧绝热 x=max, y=max
-N_SUB_XMAX = 4000
-N_SUB_YMAX = 4000
+N_SUB_XMAX = 1400
+N_SUB_YMAX = 1400
 
 # substrate 顶面裸露区域 z=z1，分成两个矩形
-N_SUB_TOP_EXPOSED_R = 4000   # x∈[3,6], y∈[0,6]
-N_SUB_TOP_EXPOSED_U = 3000   # x∈[0,3], y∈[3,6]
+N_SUB_TOP_EXPOSED_R = 1400   # x∈[3,6], y∈[0,6]
+N_SUB_TOP_EXPOSED_U = 1000   # x∈[0,3], y∈[3,6]
 
 # bump 对称面与外侧面
-N_BUMP_X0 = 2500
-N_BUMP_Y0 = 2500
-N_BUMP_XMAX = 2500
-N_BUMP_YMAX = 2500
+N_BUMP_X0 = 800
+N_BUMP_Y0 = 800
+N_BUMP_XMAX = 800
+N_BUMP_YMAX = 800
 
 # chip 对称面与外侧面
-N_CHIP_X0 = 2500
-N_CHIP_Y0 = 2500
-N_CHIP_XMAX = 2500
-N_CHIP_YMAX = 2500
+N_CHIP_X0 = 800
+N_CHIP_Y0 = 800
+N_CHIP_XMAX = 800
+N_CHIP_YMAX = 800
 
 # interfaces
-N_IF_12 = 8000
-N_IF_23 = 8000
+N_IF_12 = 2700
+N_IF_23 = 2700
 
 # L形拐点边缘加密：靠近x=3和y=3的接口区域
-N_IF_12_EDGE_X = 3000   # x∈[2.5, 3.0], y∈[0, 3.0], z=z1
-N_IF_12_EDGE_Y = 3000   # x∈[0, 3.0], y∈[2.5, 3.0], z=z1
+N_IF_12_EDGE_X = 1000   # x∈[2.5, 3.0], y∈[0, 3.0], z=z1
+N_IF_12_EDGE_Y = 1000   # x∈[0, 3.0], y∈[2.5, 3.0], z=z1
 # L形拐点附近裸露基板顶面Neumann BC加密
-N_SUB_TOP_EDGE_X = 2000  # x∈[3.0, 3.5], y∈[0, 6.0], z=z1
-N_SUB_TOP_EDGE_Y = 2000  # x∈[0, 3.0], y∈[3.0, 3.5], z=z1
+N_SUB_TOP_EDGE_X = 700  # x∈[3.0, 3.5], y∈[0, 6.0], z=z1
+N_SUB_TOP_EDGE_Y = 700  # x∈[0, 3.0], y∈[3.0, 3.5], z=z1
 
-RESAMPLE_EVERY = 2000
+RESAMPLE_EVERY = 1000
 
 
 def generate_internal_points():
@@ -1234,8 +1234,8 @@ if __name__ == "__main__":
     print(f"  - internal collocation resampling every {RESAMPLE_EVERY} Adam epochs")
     print("=" * 80)
 
-    epochs_adam = 40000
-    epochs_lbfgs = 5000
+    epochs_adam = 3000
+    epochs_lbfgs = 0
 
     # ---------- Phase 1: Adam ----------
     print(f"\n--- Phase 1: Adam ({epochs_adam} epochs) ---")
@@ -1264,7 +1264,7 @@ if __name__ == "__main__":
     # ---------- Phase 2: L-BFGS ----------
     print(f"\n--- Phase 2: L-BFGS ({epochs_lbfgs} epochs) ---")
     pbar = tqdm(range(epochs_lbfgs))
-    for i in pbar:
+    for i in pbar:  # epochs_lbfgs=0 时直接跳过
         total_loss, comps = model.train_step_lbfgs()
 
         if total_loss is not None and total_loss < model.best_loss:
@@ -1426,10 +1426,10 @@ dz_vals = [z1 - z0, z2 - z1, z3 - z2]
 
 print("=" * 80)
 print("三维四分之一模型几何参数 (mm):")
-print(f"Substrate: x∈[{x_sub_min}, {x_sub_max}], y∈[{y_sub_min}, {y_sub_max}], z∈[{z0}, {z1}]")
-print(f"Bump:      x∈[{x_bump_min}, {x_bump_max}], y∈[{y_bump_min}, {y_bump_max}], z∈[{z1}, {z2}]")
-print(f"Chip:      x∈[{x_chip_min}, {x_chip_max}], y∈[{y_chip_min}, {y_chip_max}], z∈[{z2}, {z3}]")
-print(f"Alpha (mm²/s): Sub={alpha_sub:.6f}, Bump={alpha_bump:.5f}, Chip={alpha_chip:.4f}")
+print(f"Substrate: x in [{x_sub_min}, {x_sub_max}], y in [{y_sub_min}, {y_sub_max}], z in [{z0}, {z1}]")
+print(f"Bump:      x in [{x_bump_min}, {x_bump_max}], y in [{y_bump_min}, {y_bump_max}], z in [{z1}, {z2}]")
+print(f"Chip:      x in [{x_chip_min}, {x_chip_max}], y in [{y_chip_min}, {y_chip_max}], z in [{z2}, {z3}]")
+print(f"Alpha (mm^2/s): Sub={alpha_sub:.6f}, Bump={alpha_bump:.5f}, Chip={alpha_chip:.4f}")
 print(f"BETA_HC = {BETA_HC}")
 print("=" * 80)
 
@@ -1619,49 +1619,49 @@ def sample_interface_scaled(num, x_range_phys, y_range_phys, z_val_phys, sub_idx
 # ==========================================================
 # 5. 采样生成函数
 # ==========================================================
-N_INT_SUB = 24000
-N_INT_BUMP = 12000
-N_INT_CHIP = 14000
+N_INT_SUB = 8000
+N_INT_BUMP = 4000
+N_INT_CHIP = 5000
 
-N_BC_SUB_BOTTOM = 10000
-N_BC_CHIP_TOP = 8000
+N_BC_SUB_BOTTOM = 3500
+N_BC_CHIP_TOP = 2800
 
 # substrate 对称面 x=0, y=0
-N_SUB_X0 = 4000
-N_SUB_Y0 = 4000
+N_SUB_X0 = 1400
+N_SUB_Y0 = 1400
 
 # substrate 外侧绝热 x=max, y=max
-N_SUB_XMAX = 4000
-N_SUB_YMAX = 4000
+N_SUB_XMAX = 1400
+N_SUB_YMAX = 1400
 
 # substrate 顶面裸露区域 z=z1，分成两个矩形
-N_SUB_TOP_EXPOSED_R = 4000   # x∈[3,6], y∈[0,6]
-N_SUB_TOP_EXPOSED_U = 3000   # x∈[0,3], y∈[3,6]
+N_SUB_TOP_EXPOSED_R = 1400   # x∈[3,6], y∈[0,6]
+N_SUB_TOP_EXPOSED_U = 1000   # x∈[0,3], y∈[3,6]
 
 # bump 对称面与外侧面
-N_BUMP_X0 = 2500
-N_BUMP_Y0 = 2500
-N_BUMP_XMAX = 2500
-N_BUMP_YMAX = 2500
+N_BUMP_X0 = 800
+N_BUMP_Y0 = 800
+N_BUMP_XMAX = 800
+N_BUMP_YMAX = 800
 
 # chip 对称面与外侧面
-N_CHIP_X0 = 2500
-N_CHIP_Y0 = 2500
-N_CHIP_XMAX = 2500
-N_CHIP_YMAX = 2500
+N_CHIP_X0 = 800
+N_CHIP_Y0 = 800
+N_CHIP_XMAX = 800
+N_CHIP_YMAX = 800
 
 # interfaces
-N_IF_12 = 8000
-N_IF_23 = 8000
+N_IF_12 = 2700
+N_IF_23 = 2700
 
 # L形拐点边缘加密：靠近x=3和y=3的接口区域
-N_IF_12_EDGE_X = 3000   # x∈[2.5, 3.0], y∈[0, 3.0], z=z1
-N_IF_12_EDGE_Y = 3000   # x∈[0, 3.0], y∈[2.5, 3.0], z=z1
+N_IF_12_EDGE_X = 1000   # x∈[2.5, 3.0], y∈[0, 3.0], z=z1
+N_IF_12_EDGE_Y = 1000   # x∈[0, 3.0], y∈[2.5, 3.0], z=z1
 # L形拐点附近裸露基板顶面Neumann BC加密
-N_SUB_TOP_EDGE_X = 2000  # x∈[3.0, 3.5], y∈[0, 6.0], z=z1
-N_SUB_TOP_EDGE_Y = 2000  # x∈[0, 3.0], y∈[3.0, 3.5], z=z1
+N_SUB_TOP_EDGE_X = 700  # x∈[3.0, 3.5], y∈[0, 6.0], z=z1
+N_SUB_TOP_EDGE_Y = 700  # x∈[0, 3.0], y∈[3.0, 3.5], z=z1
 
-RESAMPLE_EVERY = 2000
+RESAMPLE_EVERY = 1000
 
 
 def generate_internal_points():
@@ -2534,8 +2534,8 @@ if __name__ == "__main__":
     print(f"  - internal collocation resampling every {RESAMPLE_EVERY} Adam epochs")
     print("=" * 80)
 
-    epochs_adam = 40000
-    epochs_lbfgs = 5000
+    epochs_adam = 3000
+    epochs_lbfgs = 0
 
     # ---------- Phase 1: Adam ----------
     print(f"\n--- Phase 1: Adam ({epochs_adam} epochs) ---")
@@ -2564,7 +2564,7 @@ if __name__ == "__main__":
     # ---------- Phase 2: L-BFGS ----------
     print(f"\n--- Phase 2: L-BFGS ({epochs_lbfgs} epochs) ---")
     pbar = tqdm(range(epochs_lbfgs))
-    for i in pbar:
+    for i in pbar:  # epochs_lbfgs=0 时直接跳过
         total_loss, comps = model.train_step_lbfgs()
 
         if total_loss is not None and total_loss < model.best_loss:

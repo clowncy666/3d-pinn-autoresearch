@@ -48,32 +48,26 @@ dT = T_max - T_init
 SCALE_A = 0.85
 BETA_HC = 3.0
 
-
 # ==========================================================
 # 2. 缩放辅助函数
 # ==========================================================
 def scale_input(val, val_min, val_max):
     return 2.0 * SCALE_A * (val - val_min) / (val_max - val_min) - SCALE_A
 
-
 def scale_x(x_phys, sub_idx):
     xmin, xmax = subdomain_x[sub_idx]
     return scale_input(x_phys, xmin, xmax)
-
 
 def scale_y(y_phys, sub_idx):
     ymin, ymax = subdomain_y[sub_idx]
     return scale_input(y_phys, ymin, ymax)
 
-
 def scale_z(z_phys, sub_idx):
     zmin, zmax = subdomain_z[sub_idx]
     return scale_input(z_phys, zmin, zmax)
 
-
 def scale_t(t_phys):
     return scale_input(t_phys, 0.0, total_time)
-
 
 # ==========================================================
 # 3. 网络架构定义 (精简版：仅保留推理功能)
@@ -91,7 +85,6 @@ class StandardMLP(nn.Module):
     def forward(self, x):
         return self.main(x)
 
-
 class XPINNInference:
     def __init__(self):
         # 3个子网络分别对应基板、凸块、芯片
@@ -107,7 +100,7 @@ class XPINNInference:
     def predict(self, x_phys, y_phys, z_phys, t_phys):
         out = torch.zeros_like(x_phys)
 
-        # 区域0：Substrate (z0 <= z <= z1)
+        # 区域0：Substrate
         mask0 = (
                 (z_phys >= z0) & (z_phys <= z1) &
                 (x_phys >= x_sub_min) & (x_phys <= x_sub_max) &
@@ -117,7 +110,7 @@ class XPINNInference:
             xp, yp, zp, tp = x_phys[mask0], y_phys[mask0], z_phys[mask0], t_phys[mask0]
             out[mask0] = self._forward_hard(0, scale_x(xp, 0), scale_y(yp, 0), scale_z(zp, 0), scale_t(tp))
 
-        # 区域1：Bump (z1 < z <= z2)
+        # 区域1：Bump
         mask1 = (
                 (z_phys > z1) & (z_phys <= z2) &
                 (x_phys >= x_bump_min) & (x_phys <= x_bump_max) &
@@ -127,7 +120,7 @@ class XPINNInference:
             xp, yp, zp, tp = x_phys[mask1], y_phys[mask1], z_phys[mask1], t_phys[mask1]
             out[mask1] = self._forward_hard(1, scale_x(xp, 1), scale_y(yp, 1), scale_z(zp, 1), scale_t(tp))
 
-        # 区域2：Chip (z2 < z <= z3)
+        # 区域2：Chip
         mask2 = (
                 (z_phys > z2) & (z_phys <= z3) &
                 (x_phys >= x_chip_min) & (x_phys <= x_chip_max) &
@@ -138,7 +131,6 @@ class XPINNInference:
             out[mask2] = self._forward_hard(2, scale_x(xp, 2), scale_y(yp, 2), scale_z(zp, 2), scale_t(tp))
 
         return out
-
 
 # ==========================================================
 # 4. 验证与可视化函数
@@ -159,18 +151,14 @@ def evaluate_and_visualize_ansys(model, data_dir):
             continue
 
         try:
-            # 关键修改：增加 encoding='gbk' 解决带有 ℃ 符号导致的文件解码报错
-            # 增加 on_bad_lines='skip' 防止最后一行是残缺数据导致报错
             df = pd.read_csv(file_path, sep=r'\s+', skiprows=1, header=None, encoding='gbk', on_bad_lines='skip')
         except Exception as e:
-            # 如果 GBK 还是失败，尝试拉丁编码强制读取
             try:
                 df = pd.read_csv(file_path, sep=r'\s+', skiprows=1, header=None, encoding='latin1', on_bad_lines='skip')
             except Exception as e2:
                 print(f"读取文件 {file_path} 彻底失败: {e2}")
                 continue
 
-        # 第0列是Node，提取 1,2,3 列坐标，第4列真实温度
         x_real = df.iloc[:, 1].values
         y_real = df.iloc[:, 2].values
         z_real = df.iloc[:, 3].values
@@ -181,14 +169,11 @@ def evaluate_and_visualize_ansys(model, data_dir):
         z_t = torch.tensor(z_real, dtype=torch.float32).view(-1, 1).to(device)
         time_t = (torch.ones_like(x_t) * t_val).to(device)
 
-        # 模型推理
         with torch.no_grad():
             theta_pred = model.predict(x_t, y_t, z_t, time_t).cpu().numpy().flatten()
 
-        # 逆归一化到真实物理温度
         T_pred = T_init + theta_pred * dT
 
-        # 计算误差指标
         error_abs = np.abs(T_pred - T_real)
         mae = mean_absolute_error(T_real, T_pred)
         max_err = np.max(error_abs)
@@ -199,24 +184,20 @@ def evaluate_and_visualize_ansys(model, data_dir):
         metrics["max_err"].append(max_err)
         metrics["l2_rel"].append(l2_rel)
 
-        print(
-            f"[Time {t_val}s] 节点数: {len(T_real)} | MAE: {mae:.4f} °C | Max Error: {max_err:.4f} °C | Rel L2: {l2_rel:.4%}")
+        print(f"[Time {t_val}s] 节点数: {len(T_real)} | MAE: {mae:.4f} °C | Max Error: {max_err:.4f} °C | Rel L2: {l2_rel:.4%}")
 
-        # --- 绘图 ---
+        # --- 绘图 (为避免挂机循环时内存泄漏，可视情况注释掉绘图部分) ---
         fig = plt.figure(figsize=(24, 7))
         fig.suptitle(f"Thermal Field at t={int(t_val)}s  (MAE: {mae:.4f} °C, Max Err: {max_err:.4f} °C)", fontsize=16)
 
-        # Z轴放大两倍以便于视觉观察厚度
         box_aspect = (np.ptp(x_real), np.ptp(y_real), np.ptp(z_real) * 2)
 
-        # 1. 真实温度场 (Ground Truth)
         ax1 = fig.add_subplot(1, 3, 1, projection='3d')
         p1 = ax1.scatter(x_real, y_real, z_real, c=T_real, cmap=ansys_cmap, s=8, alpha=0.9)
         ax1.set_title("Ground Truth (ANSYS)", fontsize=14)
         ax1.set_box_aspect(box_aspect)
         fig.colorbar(p1, ax=ax1, fraction=0.03, pad=0.1, label='Temperature (°C)')
 
-        # 2. 预测温度场 (Prediction)
         ax2 = fig.add_subplot(1, 3, 2, projection='3d')
         vmin_T, vmax_T = np.min(T_real), np.max(T_real)
         p2 = ax2.scatter(x_real, y_real, z_real, c=T_pred, cmap=ansys_cmap, s=8, alpha=0.9, vmin=vmin_T, vmax=vmax_T)
@@ -224,7 +205,6 @@ def evaluate_and_visualize_ansys(model, data_dir):
         ax2.set_box_aspect(box_aspect)
         fig.colorbar(p2, ax=ax2, fraction=0.03, pad=0.1, label='Temperature (°C)')
 
-        # 3. 绝对误差场 (Absolute Error)
         ax3 = fig.add_subplot(1, 3, 3, projection='3d')
         p3 = ax3.scatter(x_real, y_real, z_real, c=error_abs, cmap=ansys_cmap, s=8, alpha=0.9)
         ax3.set_title(f"Absolute Error (Max: {max_err:.2f}°C)", fontsize=14)
@@ -242,59 +222,53 @@ def evaluate_and_visualize_ansys(model, data_dir):
         plt.savefig(save_path, dpi=200, bbox_inches='tight')
         plt.close()
 
-    # --- 绘制随时间变化的误差折线图 ---
+    # --- 综合评分逻辑 ---
     if len(metrics["time"]) > 0:
-        plt.figure(figsize=(15, 5))
+        mean_mae = float(np.mean(metrics["mae"]))
+        mean_max_err = float(np.mean(metrics["max_err"]))
+        absolute_max_err = float(np.max(metrics["max_err"]))
 
-        plt.subplot(1, 3, 1)
-        plt.plot(metrics["time"], metrics["mae"], 's-', color='#d62728', linewidth=2)
-        plt.title("Mean Absolute Error (MAE)")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Error (°C)")
-        plt.grid(True, linestyle='--', alpha=0.7)
+        # 新增混合评分：50% 全局精度 + 30% 平均局部精度 + 20% 极限最差情况
+        score = (mean_mae * 0.5) + (mean_max_err * 0.3) + (absolute_max_err * 0.2)
+        
+        print(f"\n{'='*60}")
+        print(f"  AUTORESEARCH SCORE REPORT")
+        print(f"  [50%] Mean MAE                 : {mean_mae:.4f} °C")
+        print(f"  [30%] Mean of Max Errors       : {mean_max_err:.4f} °C")
+        print(f"  [20%] Absolute Max Error       : {absolute_max_err:.4f} °C")
+        print(f"{'-'*60}")
+        
+        # 写入 JSON
+        import json
+        result = {
+            "score": round(score, 4),
+            "mean_mae": round(mean_mae, 4),
+            "mean_max_err": round(mean_max_err, 4),
+            "absolute_max_err": round(absolute_max_err, 4)
+        }
+        with open("autoresearch_score.json", "w") as f:
+            json.dump(result, f, indent=2)
 
-        plt.subplot(1, 3, 2)
-        plt.plot(metrics["time"], metrics["max_err"], 'o-', color='#ff7f0e', linewidth=2)
-        plt.title("Maximum Absolute Error")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Error (°C)")
-        plt.grid(True, linestyle='--', alpha=0.7)
-
-        plt.subplot(1, 3, 3)
-        plt.plot(metrics["time"], metrics["l2_rel"], '^-', color='#1f77b4', linewidth=2)
-        plt.title("Relative L2 Error")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Ratio")
-        plt.grid(True, linestyle='--', alpha=0.7)
-
-        plt.tight_layout()
-        plt.savefig("Global_Error_Metrics_over_Time.png", dpi=200)
-        plt.close()
-        print("\n所有验证分析图表已成功生成到当前目录！")
-
+        # 专门给 Claude 留出的唯一锚点（放最后一行，不可更改格式）
+        print(f"FINAL_AUTORESEARCH_SCORE: {score:.4f}")
+        print(f"{'='*60}\n")
 
 # ==========================================================
 # 5. 主程序入口
 # ==========================================================
 if __name__ == "__main__":
-    # 实例化精简版模型
     model = XPINNInference()
-
-    # 使用绝对路径加载权重
     model_path = r"D:\cy\芯片基板pinn\三维\三维1.0.1\best_model_xpinn_3d_quarter.pt"
 
     if os.path.exists(model_path):
         state_dicts = torch.load(model_path, map_location=device)
         for i, net in enumerate(model.nets):
             net.load_state_dict(state_dicts[i])
-            net.eval()  # 设置为评估模式
-        print(f"✅ 成功加载模型权重: {model_path}")
+            net.eval() 
+        print(f"[OK] 成功加载模型权重: {model_path}")
     else:
-        print(f"❌ 错误：未找到模型文件 {model_path}")
+        print(f"[ERROR] 错误：未找到模型文件 {model_path}")
         exit()
 
-    # 真实数据所在的绝对路径目录
     data_directory = r"D:\cy\芯片基板pinn\三维\data"
-
-    # 启动推理评估
     evaluate_and_visualize_ansys(model, data_directory)
