@@ -643,8 +643,8 @@ class XPINN3Layer3DQuarter:
         self.optim_lbfgs = torch.optim.LBFGS(
             self.all_params,
             lr=1.0,
-            max_iter=20,
-            max_eval=25,
+            max_iter=50,
+            max_eval=60,
             tolerance_grad=1e-7,
             tolerance_change=1e-9,
             history_size=50,
@@ -1235,7 +1235,7 @@ if __name__ == "__main__":
     print("=" * 80)
 
     epochs_adam = 8000
-    epochs_lbfgs = 800
+    epochs_lbfgs = 1200
 
     # ---------- Phase 1: Adam ----------
     print(f"\n--- Phase 1: Adam ({epochs_adam} epochs) ---")
