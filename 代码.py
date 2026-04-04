@@ -1234,7 +1234,7 @@ if __name__ == "__main__":
     print(f"  - internal collocation resampling every {RESAMPLE_EVERY} Adam epochs")
     print("=" * 80)
 
-    epochs_adam = 8000
+    epochs_adam = 12000
     epochs_lbfgs = 1200
 
     # ---------- Phase 1: Adam ----------
