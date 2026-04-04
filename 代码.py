@@ -319,9 +319,9 @@ def sample_interface_scaled(num, x_range_phys, y_range_phys, z_val_phys, sub_idx
 # ==========================================================
 # 5. 采样生成函数
 # ==========================================================
-N_INT_SUB = 8000
+N_INT_SUB = 11000
 N_INT_BUMP = 4000
-N_INT_CHIP = 5000
+N_INT_CHIP = 7000
 
 N_BC_SUB_BOTTOM = 3500
 N_BC_CHIP_TOP = 2800
