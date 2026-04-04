@@ -361,7 +361,7 @@ N_IF_12_EDGE_Y = 1000   # x∈[0, 3.0], y∈[2.5, 3.0], z=z1
 N_SUB_TOP_EDGE_X = 700  # x∈[3.0, 3.5], y∈[0, 6.0], z=z1
 N_SUB_TOP_EDGE_Y = 700  # x∈[0, 3.0], y∈[3.0, 3.5], z=z1
 
-RESAMPLE_EVERY = 1000
+RESAMPLE_EVERY = 500
 
 
 def generate_internal_points():
@@ -635,9 +635,9 @@ class XPINN3Layer3DQuarter:
         for net in self.nets:
             self.all_params += list(net.parameters())
 
-        self.optim_adam = torch.optim.Adam(self.all_params, lr=1e-3)
+        self.optim_adam = torch.optim.Adam(self.all_params, lr=2e-3)
         self.scheduler = ReduceLROnPlateau(
-            self.optim_adam, mode='min', factor=0.9, patience=1000, verbose=False
+            self.optim_adam, mode='min', factor=0.7, patience=600, verbose=False
         )
 
         self.optim_lbfgs = torch.optim.LBFGS(
