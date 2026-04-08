@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python error.py)",
+      "Bash(python 代码.py)",
+      "Bash(\"D:\\\\cy\\\\芯片基板pinn\\\\venv\\\\Scripts\\\\python.exe\" 代码.py)",
+      "Bash(\"D:\\\\cy\\\\芯片基板pinn\\\\venv\\\\Scripts\\\\python.exe\" error.py)",
+      "Bash(git:*)",
+      "Bash(D:\\\\cy\\\\芯片基板pinn\\\\venv\\\\Scripts\\\\python.exe:*)",
+      "Bash(powershell:*)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(\"D:\\\\cy\\\\芯片基板pinn\\\\venv\\\\Scripts\\\\python.exe\" \"D:\\\\cy\\\\芯片基板pinn\\\\三维\\\\三维1.0.1\\\\代码.py\")",
+      "Bash(echo \"done: $?\")",
+      "Bash(\"D:\\\\cy\\\\芯片基板pinn\\\\venv\\\\Scripts\\\\python.exe\" \"D:\\\\cy\\\\芯片基板pinn\\\\三维\\\\三维1.0.1\\\\error.py\")",
+      "Bash(ls:*)",
+      "Bash(python3:*)"
+    ]
+  }
+}

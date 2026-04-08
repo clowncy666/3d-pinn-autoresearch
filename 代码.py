@@ -637,7 +637,7 @@ class XPINN3Layer3DQuarter:
 
         self.optim_adam = torch.optim.Adam(self.all_params, lr=2e-3)
         self.scheduler = ReduceLROnPlateau(
-            self.optim_adam, mode='min', factor=0.7, patience=600, verbose=False
+            self.optim_adam, mode='min', factor=0.8, patience=600, verbose=False
         )
 
         self.optim_lbfgs = torch.optim.LBFGS(
